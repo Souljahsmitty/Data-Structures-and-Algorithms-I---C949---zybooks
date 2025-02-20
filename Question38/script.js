@@ -1,0 +1,99 @@
+document.addEventListener("DOMContentLoaded", function() {
+    // Retrieve or initialize timer from localStorage
+    let timer = localStorage.getItem("quiz_timer") ? parseInt(localStorage.getItem("quiz_timer"), 10) : 7200;
+    const countdownElement = document.getElementById("countdown");
+
+    function updateTimer() {
+        if (!countdownElement) {
+            console.error("Countdown element not found!");
+            return;
+        }
+
+        let minutes = Math.floor(timer / 60);
+        let seconds = timer % 60;
+        countdownElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        if (timer > 0) {
+            timer--;
+            localStorage.setItem("quiz_timer", timer); // Save updated time
+            setTimeout(updateTimer, 1000);
+        }
+    }
+    updateTimer();
+
+    // Get current question number dynamically
+    let currentQuestion = document.body.getAttribute("data-question");
+
+    // Function to save selected answer for the current question
+    function saveAnswer() {
+        let selectedAnswer = document.querySelector("input[name='answer']:checked");
+        if (selectedAnswer) {
+            localStorage.setItem(`question${currentQuestion}_answer`, selectedAnswer.value);
+        }
+    }
+
+    // Function to restore previously selected answer
+    function restoreAnswer() {
+        let savedAnswer = localStorage.getItem(`question${currentQuestion}_answer`);
+        if (savedAnswer) {
+            let answerElement = document.querySelector(`input[name='answer'][value='${savedAnswer}']`);
+            if (answerElement) {
+                answerElement.checked = true;
+            }
+        }
+    }
+
+    restoreAnswer(); // Restore answer selection on page load
+
+    const submitButton = document.getElementById("submitAnswer");
+    if (submitButton) {
+        submitButton.addEventListener("click", function() {
+            let selectedAnswer = document.querySelector("input[name='answer']:checked");
+			let feedback = document.getElementById("feedback");
+
+			if (!selectedAnswer) {
+				feedback.textContent = "Please select an answer.";
+				feedback.className = "wrong";
+				return;
+			}
+
+			if (selectedAnswer.value === "D") {
+				feedback.textContent = "✔ Correct! Maintaining a sorted array of top performers offers several advantages: it eliminates the need to sort the entire allSalespersons list, ensures the top five salespersons are readily accessible, and is more efficient since sorting a smaller array is faster than sorting the full list.";
+				feedback.className = "correct";
+			} else {
+				feedback.textContent = "✘ Incorrect. The correct answer is D: Using a sorted array for the top performers avoids unnecessary sorting of the entire list, provides quick access to the top five, and is more efficient due to the smaller size of the array.";
+				feedback.className = "wrong";
+			}
+        });
+    } else {
+        console.error("submitAnswer button not found!");
+    }
+	const resetButton = document.getElementById("resetQuiz");
+    if (resetButton) {
+        resetButton.addEventListener("click", function() {
+            localStorage.clear(); // Clears all stored answers and resets timer
+            window.location.href = "../index.html";
+        });
+    } else {
+        console.error("resetQuiz button not found!");
+    }
+    const backButton = document.getElementById("backQuestion");
+    if (backButton) {
+        backButton.addEventListener("click", function() {
+            saveAnswer(); // ✅ Save before going back
+            window.location.href = "../Question37/index.html";
+        });
+    } else {
+        console.error("backQuestion button not found!");
+    }
+
+    const nextButton = document.getElementById("nextQuestion");
+    if (nextButton) {
+        nextButton.addEventListener("click", function() {
+            saveAnswer(); // ✅ Save before going forward
+            window.location.href = "../Question39/index.html";
+        });
+    } else {
+        console.error("nextQuestion button not found!");
+    }
+});
